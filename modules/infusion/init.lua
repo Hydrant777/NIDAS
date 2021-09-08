@@ -47,8 +47,6 @@ end
 -- --Sets up the event listeners for the infusion
 -- require("modules.infusion.event-listen")(namespace)
 
-local checkAndInfuse = require("modules.infusion.check-and-infuse")(namespace)
-
 -- Finds any pedestal
 pcall(
     function()
@@ -66,6 +64,8 @@ pcall(
         return
     end
 )
+
+local checkAndInfuse = require("modules.infusion.check-and-infuse")(namespace)
 
 function infusion.update()
     -- TODO: support multiple altars, transposers, redstone I/Os, and interfaces
