@@ -17,7 +17,6 @@ local function exec(pattern)
                 if patternAmount > essentia.amount then
                     missing = true
                     missingEssentia[patternName] = patternAmount - essentia.amount
-                    missing = true
                 end
                 found = true
                 break

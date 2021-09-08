@@ -15,9 +15,12 @@ local function printIfDebug(...)
     end
 end
 
+local hasWarnedAboutMissingEssentia = false
 local function setCheckAndInfuse(namespace)
+    local meInterface = namespace.infusionData.meInterface
+    local transposer = namespace.infusionData.transposer
+
     -- TODO: Order missing essentia
-    local hasWarnedAboutMissingEssentia = false
     local function warnAboutMissingEssentia(missingEssentia, label)
         printIfDebug("WARNING! NOT ENOUGH ESSENTIA" .. (label and " TO MAKE " .. string.upper(label) .. "!" or "!"))
         printIfDebug("Missing:")
@@ -29,8 +32,8 @@ local function setCheckAndInfuse(namespace)
     end
 
     local function emptyCenterPedestal()
-        while namespace.infusionData.transposer.getStackInSlot(namespace.infusionData.centerPedestalNumber, 1) do
-            namespace.infusionData.transposer.transferItem(
+        while transposer.getStackInSlot(namespace.infusionData.centerPedestalNumber, 1) do
+            transposer.transferItem(
                 namespace.infusionData.centerPedestalNumber,
                 namespace.infusionData.outputSlotNumber
             )
@@ -40,16 +43,16 @@ local function setCheckAndInfuse(namespace)
 
     local request
     local function checkAndInfuse()
-        if getFreeCPU(component.me_interface.address) then
+        if getFreeCPU(meInterface.address) then
             local itemsInChest = {}
             -- Adds all items in the chest connected through the storage bus to the list
-            for item in component.me_interface.allItems() do
+            for item in meInterface.allItems() do
                 if item.size > 0 then
                     table.insert(itemsInChest, item)
                 end
             end
 
-            local pattern = findMatchingPattern(itemsInChest, component.me_interface.address)
+            local pattern = findMatchingPattern(itemsInChest, meInterface.address)
             if pattern then
                 local label
                 for _, output in ipairs(pattern.outputs) do
@@ -61,7 +64,7 @@ local function setCheckAndInfuse(namespace)
 
                 local missingEssentia = checkForMissingEssentia(namespace.recipes[label] or {essentia = {}})
                 if not namespace.recipes[label] or not missingEssentia then
-                    local craftable = component.me_interface.getCraftables({label = label})[1]
+                    local craftable = meInterface.getCraftables({label = label})[1]
                     printIfDebug("Crafting " .. label)
                     request = craftable.request()
 
@@ -79,11 +82,7 @@ local function setCheckAndInfuse(namespace)
                     local itemLabel
                     local item
                     while not itemLabel do
-                        item =
-                            namespace.infusionData.transposer.getStackInSlot(
-                            namespace.infusionData.centerPedestalNumber,
-                            1
-                        )
+                        item = transposer.getStackInSlot(namespace.infusionData.centerPedestalNumber, 1)
                         itemLabel = item and item.label
                         os.sleep(0)
                     end
@@ -104,7 +103,7 @@ local function setCheckAndInfuse(namespace)
 
                         namespace.recipes[label] = {
                             inputs = inputs,
-                            essentia = getRequiredEssentia(component.blockstonedevice_2.address)
+                            essentia = getRequiredEssentia(namespace.runicMatrix.address)
                         }
                         namespace.save()
 
@@ -125,11 +124,7 @@ local function setCheckAndInfuse(namespace)
 
                     -- Waits for the item in the center pedestal to change
                     while itemLabel == item.label do
-                        item =
-                            namespace.infusionData.transposer.getStackInSlot(
-                            namespace.infusionData.centerPedestalNumber,
-                            1
-                        ) or {}
+                        item = transposer.getStackInSlot(namespace.infusionData.centerPedestalNumber, 1) or {}
                         os.sleep(0)
                     end
 
@@ -139,7 +134,7 @@ local function setCheckAndInfuse(namespace)
                         printIfDebug("Done")
                     else
                         printIfDebug("Oh, oh...")
-                        printIfDebug("Removed " .. itemLabel .. " from the pedestal.")
+                        printIfDebug("Removed " .. item.label .. " from the pedestal.")
                         printIfDebug("But the craft for " .. label .. " is still going in the ME system.")
                         printIfDebug("Please cancel the craft manually.")
                         printIfDebug("Are you using a dummy item?")

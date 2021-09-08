@@ -52,6 +52,8 @@ local checkAndInfuse = require("modules.infusion.check-and-infuse")(namespace)
 -- Finds any pedestal
 pcall(
     function()
+        namespace.infusionData.meInterface = component.me_interface
+        namespace.infusionData.runicMatrix = component.blockstonedevice_2
         namespace.infusionData.transposer = component.transposer
         for i = 0, 5 do
             local inventoryName = namespace.infusionData.transposer.getInventoryName(i)
